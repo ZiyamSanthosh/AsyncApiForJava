@@ -355,6 +355,14 @@ public class Test {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }*/
-        ObjectMapper objectMapper = new ObjectMapper();
+        /*ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            JsonNode jsonNode = objectMapper.readTree(schema);
+            for (JsonNode x : jsonNode.findValues("$ref")){
+                System.out.println(x);
+            }
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }*/
     }
 }

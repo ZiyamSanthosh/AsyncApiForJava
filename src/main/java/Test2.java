@@ -1,3 +1,8 @@
+import Models.AsyncAPI;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class Test2 {
 
     public static void main(String[] args) {
@@ -299,6 +304,6 @@ public class Test2 {
                 "      }\n" +
                 "   }\n" +
                 "}";
-        AsyncAPI2 asyncAPI2 = new AsyncAPI2(schema);
+        AsyncAPI asyncAPI2 = new AsyncAPI(schema);
     }
 }

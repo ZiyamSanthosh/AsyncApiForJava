@@ -1,12 +1,8 @@
-import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import org.everit.json.schema.Schema;
-import org.everit.json.schema.loader.SchemaLoader;
-import org.json.JSONObject;
 
 import java.util.*;
 
@@ -66,6 +62,8 @@ public class AsyncAPI2 {
             if (getSchemaJsonTree().has("externalDocs")) this.externalDocs = new ExternalDocumentation(getSchemaJsonTree().get("externalDocs"));
         }
     }
+
+    //getters and setters of AsyncAPI
 
     public String getSchemaString() {
         return schemaString;
@@ -157,6 +155,7 @@ public class AsyncAPI2 {
             if (infoJsonNode.has("license")) this.license = new License(infoJsonNode.get("license"));
         }
 
+        //getters and setters for Info
         public String getTitle() {
             return title;
         }
@@ -452,6 +451,7 @@ public class AsyncAPI2 {
         private Operation subscribe;
         private Operation publish;
         private Map<String, Parameter> parameters = new HashMap<>();
+        //bindings
 
         public String get$ref() {
             return $ref;
@@ -517,8 +517,17 @@ public class AsyncAPI2 {
                 this.externalDOcs = externalDOcs;
             }
 
+            public Message getMessage() {
+                return message;
+            }
+
+            public void setMessage(Message message) {
+                this.message = message;
+            }
+
             private class OperationTrait {
 
+                private Reference $ref;
                 private String operationId;
                 private String summary;
                 private String description;
@@ -527,6 +536,11 @@ public class AsyncAPI2 {
                 //bindings
 
                 public OperationTrait(JsonNode operationTraitNode){
+                    if (operationTraitNode.has("$ref")) {
+                        this.$ref = new Reference(operationTraitNode.get("$ref"));
+                        JsonPointer jsonPointer = JsonPointer.compile(this.$ref.get$ref());
+                        operationTraitNode = getSchemaJsonTree().at(jsonPointer);
+                    }
                     if (operationTraitNode.has("operationId")) this.operationId = operationTraitNode.get("operationId").asText();
                     if (operationTraitNode.has("summary")) this.summary = operationTraitNode.get("summary").asText();
                     if (operationTraitNode.has("description")) this.description = operationTraitNode.get("description").asText();
@@ -598,6 +612,7 @@ public class AsyncAPI2 {
                         this.traits.add(new OperationTrait(x));
                     }
                 }
+                if (operationNode.has("message")) this.message = new Message(operationNode.get("message"));
             }
         }
 
@@ -620,7 +635,6 @@ public class AsyncAPI2 {
                     /*ObjectMapper objectMapper = new ObjectMapper();
                     try {
                         this.schema = SchemaLoader.load(new JSONObject(objectMapper.writeValueAsString(parameterNode.get("schema"))));
-                        System.out.println(this.schema);
                     } catch (JsonProcessingException e) {
                         e.printStackTrace();
                     }*/
@@ -666,6 +680,7 @@ public class AsyncAPI2 {
             if (channelNode.has("description")) this.description = channelNode.get("description").asText();
             //subscribe
             if (channelNode.has("publish")) this.publish = new Operation(channelNode.get("publish"));
+            if (channelNode.has("subscribe")) this.subscribe = new Operation(channelNode.get("subscribe"));
             if (channelNode.has("parameters")){
                 JsonNode parametersNode = channelNode.get("parameters");
                 for (Iterator<String> it = parametersNode.fieldNames(); it.hasNext(); ) {
@@ -675,10 +690,6 @@ public class AsyncAPI2 {
                 }
             }
         }
-    }
-
-    public static class Component {
-
     }
 
     public static class Tag {
@@ -762,7 +773,209 @@ public class AsyncAPI2 {
         }
     }
 
-    private static class Message {
+    private class Message {
+        private Reference $ref;
+        private JsonNode headers;
+        private Reference schemaReference;
+        private Schema payload;
+        private CorrelationId correlationId;
+        private Reference correlationIdReference;
+        private String schemaFormat;
+        private String contentType;
+        private String name;
+        private String title;
+        private String summary;
+        private String description;
+        private List<Tag> tags;
+        private ExternalDocumentation externalDocs;
+        //bindings
+        private List<Map<String, Object>> examples;
+        private List<MessageTrait> traits;
+
+        public JsonNode getHeaders() {
+            return headers;
+        }
+
+        public void setHeaders(JsonNode headers) {
+            this.headers = headers;
+        }
+
+        public CorrelationId getCorrelationId() {
+            return correlationId;
+        }
+
+        public void setCorrelationId(CorrelationId correlationId) {
+            this.correlationId = correlationId;
+        }
+
+        public String getSchemaFormat() {
+            return schemaFormat;
+        }
+
+        public void setSchemaFormat(String schemaFormat) {
+            this.schemaFormat = schemaFormat;
+        }
+
+        public String getContentType() {
+            return contentType;
+        }
+
+        public void setContentType(String contentType) {
+            this.contentType = contentType;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
+        }
+
+        public String getSummary() {
+            return summary;
+        }
+
+        public void setSummary(String summary) {
+            this.summary = summary;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        public void setTags(List<Tag> tags) {
+            this.tags = tags;
+        }
+
+        public ExternalDocumentation getExternalDocs() {
+            return externalDocs;
+        }
+
+        public void setExternalDocs(ExternalDocumentation externalDocs) {
+            this.externalDocs = externalDocs;
+        }
+
+        public Schema getPayload() {
+            return payload;
+        }
+
+        public void setPayload(Schema payload) {
+            this.payload = payload;
+        }
+
+        private class MessageTrait {
+
+        }
+
+        public Message(JsonNode messageNode){
+            if (messageNode.has("$ref")) {
+                this.$ref = new Reference(messageNode.get("$ref"));
+                JsonPointer jsonPointer = JsonPointer.compile(this.$ref.get$ref());
+                messageNode = getSchemaJsonTree().at(jsonPointer);
+            }
+            if (messageNode.has("headers")) {
+                if (messageNode.get("headers").has("$ref")){
+                    this.schemaReference = new Reference(messageNode.get("headers").get("$ref"));
+                }
+                //ObjectMapper objectMapper = new ObjectMapper();
+                if (this.schemaReference != null){
+                    JsonPointer jsonPointer = JsonPointer.compile(this.schemaReference.get$ref());
+                    /*try {
+                        this.headers = SchemaLoader.load(new JSONObject(objectMapper.writeValueAsString(getSchemaJsonTree().at(jsonPointer))));
+                    } catch (JsonProcessingException e) {
+                        e.printStackTrace();
+                    }*/
+                    this.headers = getSchemaJsonTree().at(jsonPointer);
+                } else {
+                    /*try {
+                        this.headers = SchemaLoader.load(new JSONObject(objectMapper.writeValueAsString(messageNode.get("headers"))));
+                    } catch (JsonProcessingException e) {
+                        e.printStackTrace();
+                    }*/
+                    this.headers = messageNode.get("headers");
+                }
+            }
+            /*if (messageNode.has("payload")) {
+                if (messageNode.get("payload").has("$ref")){
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    JsonPointer jsonPointer = JsonPointer.compile(new Reference(messageNode.get("payload").get("$ref")).get$ref());
+                    JsonNode x = getSchemaJsonTree().at(jsonPointer);
+                    try {
+                        this.payload = objectMapper.readValue(x.textValue(), Schema.class);
+                    } catch (JsonProcessingException e) {
+                        e.printStackTrace();
+                    }
+                }
+            };*/
+            if (messageNode.has("correlationId")) {
+                if (messageNode.get("correlationId").has("$ref")){
+                    this.correlationIdReference = new Reference(messageNode.get("correlationId").get("$ref"));
+                }
+                if (this.correlationIdReference != null){
+                    JsonPointer jsonPointer = JsonPointer.compile(this.correlationIdReference.get$ref());
+                    this.correlationId = new CorrelationId(getSchemaJsonTree().at(jsonPointer));
+                } else {
+                    this.correlationId = new CorrelationId(messageNode.get("correlationId"));
+                }
+            }
+            if (messageNode.has("schemaFormat")) this.schemaFormat = messageNode.get("schemaFormat").asText();
+            if (messageNode.has("contentType")) this.contentType = messageNode.get("contentType").asText();
+            if (messageNode.has("name")) this.name = messageNode.get("name").asText();
+            if (messageNode.has("title")) this.title = messageNode.get("title").asText();
+            if (messageNode.has("summary")) this.summary = messageNode.get("summary").asText();
+            if (messageNode.has("description")) this.description = messageNode.get("description").asText();
+            if (messageNode.has("tags")) {
+                JsonNode tagsNode = messageNode.get("tags");
+                for (Iterator<JsonNode> it = tagsNode.elements(); it.hasNext(); ) {
+                    JsonNode x = it.next();
+                    this.tags.add(new Tag(x));
+                }
+            }
+            if (messageNode.has("externalDocs")) this.externalDocs = new ExternalDocumentation(messageNode.get("externalDocs"));
+
+        }
+    }
+
+    private static class CorrelationId {
+        private String description;
+        private String location;
+
+        private CorrelationId(JsonNode corrIdNode){
+            if (corrIdNode.has("description")) this.description = corrIdNode.get("description").asText();
+            if (corrIdNode.has("location")) this.location = corrIdNode.get("location").asText();
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        public String getLocation() {
+            return location;
+        }
+
+        public void setLocation(String location) {
+            this.location = location;
+        }
+    }
+
+    public static class Component {
 
     }
 }
